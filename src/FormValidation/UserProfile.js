@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './style.css';
+import Swal from 'sweetalert2';
 export default class UserProfile extends Component {
   state = {
     values: {
@@ -26,25 +27,68 @@ export default class UserProfile extends Component {
     let newError = { ...this.state.errors };
     if (value.trim() === '') {
       newError[name] = name + ' is required!';
+    } else {
+      newError[name] = '';
     }
     if (type === 'email') {
-        const regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      const regexEmail =
+        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-        if (!regexEmail.test(value)){
-            newError[name] = name + ' is invalid!';
-        } else{
-            newError[name] = '';
-        }
+      if (!regexEmail.test(value)) {
+        newError[name] = name + ' is invalid!';
+      } else {
+        newError[name] = '';
+      }
     }
     if (name === 'passwordConfirm') {
-        if(value === newValue['password']){
-            newError[name] ='';
-        }
-        else {
-            newError[name] = name + ' is not matching with your password';
-        }
+      if (value === newValue['password']) {
+        newError[name] = '';
+      } else {
+        newError[name] = name + ' is not matching with your password';
+      }
     }
     this.setState({ values: newValue, errors: newError });
+  };
+  handleSubmit = (event) => {
+    event.preventDefault();
+    // Set condition for button submit
+    let valid = true; // valid form
+    let {values, errors} = this.state;
+    let profileContent = '';
+    let errorContent = '';
+    for(let key in values) {
+        if(values[key]===''){
+            valid = false;
+        }
+        profileContent += `
+            <p class="text-left"><b>${key}:</b> ${values[key]}</p>
+        `
+    }
+    for(let key in errors) {
+        if(errors[key]!==''){
+            valid = false;
+            errorContent += `
+            <p><b class="text-danger">${key} is invalid!</b></p>
+        `
+        }
+    }
+    if ( !valid ){
+        Swal.fire({
+            title: 'Error!',
+            icon: 'error', // icon: success, error, warning, question
+            html: errorContent,
+            confirmButtonText: 'Cool'
+          })
+    }
+    else{
+        Swal.fire({
+            icon: 'success',
+            title: 'Your Account has been registered',
+            html: profileContent,
+            showConfirmButton: false,
+            timer: 1500
+          })
+    }
   };
   render() {
     return (
@@ -57,6 +101,7 @@ export default class UserProfile extends Component {
         }}
       >
         <form
+          onSubmit={this.handleSubmit}
           style={{
             fontSize:
               'font-family: "Google Sans", "Noto Sans Myanmar UI", arial, sans-serif',
@@ -160,7 +205,7 @@ export default class UserProfile extends Component {
             <div className="col-6">
               <div className="group">
                 <input
-                  value={this.state.values.passWordConfirm}
+                  value={this.state.values.passwordConfirm}
                   name="passwordConfirm"
                   type="password"
                   required
@@ -170,7 +215,7 @@ export default class UserProfile extends Component {
                 <span className="bar" />
                 <label>Password Confirm</label>
                 <span className="text text-danger">
-                  {this.state.errors.passWordConfirm}
+                  {this.state.errors.passwordConfirm}
                 </span>
               </div>
             </div>
